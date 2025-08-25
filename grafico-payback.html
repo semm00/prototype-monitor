@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise de Sensibilidade do Payback</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .table-header {
+            background-color: #f3f4f6; /* gray-100 */
+        }
+    </style>
+</head>
+<body class="bg-gray-50 p-4 sm:p-6 md:p-8">
+
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-slate-800">Análise de Custo-Benefício e Sensibilidade</h1>
+            <p class="text-gray-600 mt-2">Projeção de economia e tempo de retorno do investimento com base nos custos reais de energia do campus.</p>
+        </header>
+
+        <!-- Resumo Financeiro -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-slate-800 text-white p-6 rounded-xl shadow-md flex flex-col justify-center items-center">
+                <h3 class="text-lg font-semibold text-slate-300">Investimento Fixo</h3>
+                <p class="text-3xl font-extrabold text-cyan-300 mt-2">R$ 35.050,00</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-md flex flex-col justify-center items-center">
+                <h3 class="text-lg font-semibold text-gray-600">Custo Anual (Mínimo)</h3>
+                <p class="text-3xl font-extrabold text-green-600 mt-2">R$ 540.000</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-md flex flex-col justify-center items-center">
+                <h3 class="text-lg font-semibold text-gray-600">Custo Anual (Máximo)</h3>
+                <p class="text-3xl font-extrabold text-red-600 mt-2">R$ 900.000</p>
+            </div>
+        </div>
+
+        <!-- Gráfico e Tabela -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Gráfico de Economia Anual -->
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Potencial de Economia Anual</h2>
+                <canvas id="economiaAnualChart"></canvas>
+            </div>
+
+            <!-- Tabela de Payback -->
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Tabela de Payback (Retorno em Meses)</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-center">
+                        <thead class="border-b">
+                            <tr>
+                                <th scope="col" class="text-sm font-bold text-gray-900 px-4 py-3 table-header rounded-tl-lg">Cenário (Custo Anual)</th>
+                                <th scope="col" class="text-sm font-bold text-orange-700 px-4 py-3 table-header">Payback com 10% de Economia</th>
+                                <th scope="col" class="text-sm font-bold text-blue-700 px-4 py-3 table-header rounded-tr-lg">Payback com 20% de Economia</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b">
+                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">Mínimo (R$ 540 mil)</td>
+                                <td class="text-sm text-gray-900 font-light px-4 py-3 whitespace-nowrap">~7,8 meses</td>
+                                <td class="text-sm text-gray-900 font-light px-4 py-3 whitespace-nowrap">~3,9 meses</td>
+                            </tr>
+                            <tr class="border-b bg-gray-50">
+                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">Médio (R$ 720 mil)</td>
+                                <td class="text-sm text-gray-900 font-light px-4 py-3 whitespace-nowrap">~5,8 meses</td>
+                                <td class="text-sm text-gray-900 font-light px-4 py-3 whitespace-nowrap">~2,9 meses</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">Máximo (R$ 900 mil)</td>
+                                <td class="text-sm text-gray-900 font-light px-4 py-3 whitespace-nowrap">~4,7 meses</td>
+                                <td class="text-sm text-gray-900 font-light px-4 py-3 whitespace-nowrap">~2,3 meses</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                 <div class="mt-6 bg-green-100 border-l-4 border-green-500 text-green-800 p-4 rounded-r-lg" role="alert">
+                    <p class="font-bold">Conclusão: Viabilidade Excepcional</p>
+                    <p>Mesmo em cenários conservadores, o retorno do investimento ocorre entre 2 e 8 meses, confirmando a alta viabilidade econômica do projeto.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            Chart.defaults.font.family = 'Inter, sans-serif';
+
+            const economiaAnualCtx = document.getElementById('economiaAnualChart').getContext('2d');
+            new Chart(economiaAnualCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Cenário Mínimo', 'Cenário Médio', 'Cenário Máximo'],
+                    datasets: [
+                        {
+                            label: 'Economia com 10%',
+                            data: [54000, 72000, 90000],
+                            backgroundColor: 'rgb(249, 115, 22, 0.7)', // orange-500
+                            borderColor: 'rgb(249, 115, 22)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Economia com 20%',
+                            data: [108000, 144000, 180000],
+                            backgroundColor: 'rgb(59, 130, 246, 0.7)', // blue-500
+                            borderColor: 'rgb(59, 130, 246)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'R$ ' + (value / 1000) + 'k';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
